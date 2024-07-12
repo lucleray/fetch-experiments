@@ -14,9 +14,8 @@ async function fetchPromise() {
 async function fakeDrainRequest() {
   try {
     await fetchPromise();
-    await cpuPromise(1000);
   } catch (error) {
-    console.log("fetch error", error.cause.code);
+    console.log("fetch error", error.cause ? error.cause.code : error.message);
   }
 }
 

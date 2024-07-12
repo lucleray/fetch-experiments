@@ -1,3 +1,5 @@
+import { Worker, isMainThread, parentPort } from "worker_threads";
+
 async function cpuPromise(loop: number = 1000) {
   return new Promise<void>((resolve) => {
     for (let j = 0; j < loop; j++) {
@@ -8,16 +10,16 @@ async function cpuPromise(loop: number = 1000) {
 }
 
 async function fetchPromise() {
-  await fetch("http://localhost:3000");
-}
-
-async function fakeDrainRequest() {
   try {
-    await fetchPromise();
-    await cpuPromise(1000);
+    await fetch("http://localhost:3000");
   } catch (error) {
     console.log("fetch error", error.cause.code);
   }
+}
+
+async function fakeDrainRequest() {
+  await fetchPromise();
+  await cpuPromise(1000);
 }
 
 async function time<T>(label: string, fn: () => Promise<T>) {
@@ -33,15 +35,50 @@ async function time<T>(label: string, fn: () => Promise<T>) {
 async function main() {
   const promises: Promise<void>[] = [];
 
+  // make fetch requests in worker
+  const worker = new Worker(__filename);
+  const fetchResolvers: (() => void)[] = [];
+  worker.on("message", ({ message, id }) => {
+    if (message === "done") {
+      const resolver = fetchResolvers[id];
+      if (resolver) {
+        resolver();
+      } else {
+        console.log("error resolving ", id);
+      }
+    }
+  });
+
   for (let i = 0; i < 200; i++) {
-    promises.push(fakeDrainRequest());
+    promises.push(
+      new Promise((resolve, reject) => {
+        worker.postMessage({ message: "fetch", id: i });
+        fetchResolvers.push(resolve);
+      })
+    );
   }
 
   for (let i = 0; i < 200; i++) {
-    promises.push(cpuPromise(1000));
+    promises.push(cpuPromise(50000));
   }
 
   await Promise.all(promises);
+
+  worker.terminate();
 }
 
-time("main", main).catch(console.error);
+async function worker() {
+  parentPort?.on("message", ({ message, id }) => {
+    if (message === "fetch") {
+      fetchPromise().then(() => {
+        parentPort?.postMessage({ message: "done", id });
+      });
+    }
+  });
+}
+
+if (isMainThread) {
+  time("main", main).catch(console.error);
+} else {
+  worker();
+}

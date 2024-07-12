@@ -1,0 +1,19 @@
+{
+  "name": "node-network-test",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build": "tsc src/*.ts --outDir dist --watch",
+    "server": "node dist/server.js",
+    "client": "node dist/client.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/node": "20.14.10",
+    "typescript": "5.5.3"
+  },
+  "prettier": {}
+}

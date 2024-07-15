@@ -59,7 +59,7 @@ async function main() {
   }
 
   for (let i = 0; i < 200; i++) {
-    promises.push(cpuPromise(50000));
+    promises.push(cpuPromise(10000));
   }
 
   await Promise.all(promises);

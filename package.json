@@ -2,9 +2,9 @@
   "name": "node-network-test",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "dist/client.js",
   "scripts": {
-    "build": "tsc src/*.ts --outDir dist --watch",
+    "build": "tsc src/*.ts --outDir dist --watch --target es2022",
     "server": "node dist/server.js",
     "client": "node dist/client.js"
   },
@@ -15,5 +15,9 @@
     "@types/node": "20.14.10",
     "typescript": "5.5.3"
   },
-  "prettier": {}
+  "prettier": {},
+  "dependencies": {
+    "node-fetch": "3.3.2"
+  },
+  "type": "module"
 }

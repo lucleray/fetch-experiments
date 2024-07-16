@@ -1,3 +1,5 @@
+import fetch from "node-fetch";
+
 async function cpuPromise(loop: number = 1000) {
   return new Promise<void>((resolve) => {
     for (let j = 0; j < loop; j++) {
